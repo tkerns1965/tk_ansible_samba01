@@ -59,42 +59,67 @@
 
     - name: Update PAM configuration
       command: pam-auth-update --enable mkhomedir
-      when: chkpam_result.stdout != "pam_mkhomedir.so"
+      when: '"pam_mkhomedir.so" not in chkpam_result.stdout'
 
-    # - name: Check for domain
-    #   command: realm list --name-only
-    #   register: chkdomain_result
-    #   changed_when: False
-
-    - command: echo -e ""
-      register: echo1
+    - name: Check for domain
+      command: realm list --name-only
+      register: chkdomain_result
       changed_when: False
 
-    - debug:
-        var: echo1
+    - name: Join the domain
+      vars:
+        passwd_response:
+          - key: "(?i)password for {{ realm_user }}:"
+            value: "{{ realm_passwd }}"
+      expect:
+        command: realm join --user={{ realm_user }} --computer-ou={{ realm_ou }} {{ realm_domain }} --install=/
+        responses: "{{ passwd_response | items2dict }}"
+      when: realm_domain not in chkdomain_result.stdout_lines
 
-    - command: echo -e "cwh.local"
-      register: echo2
-      changed_when: False
+    - name: Unset sssd configuration settings
+      lineinfile:
+        path: /etc/sssd/sssd.conf
+        regexp: "{{ item }}"
+        line: '# \1'
+        backrefs: yes
+      with_items:
+        - '^(ldap_id_mapping = False)$'
+        - '^(use_fully_qualified_names = True)$'
+      register: unsetsssd_result
 
-    - debug:
-        var: echo2
+    - name: Reset sssd configuration settings
+      lineinfile:
+        path: /etc/sssd/sssd.conf
+        insertafter: "{{ item.insertafter }}"
+        line: "{{ item.line }}"
+      with_items:
+        - insertafter: '^# ldap_id_mapping = False$'
+          line: ldap_id_mapping = True
+        - insertafter: '^# use_fully_qualified_names = True$'
+          line: use_fully_qualified_names = False
+        - insertafter: '^access_provider = ad$'
+          line: ldap_user_ssh_public_key = altSecurityIdentities
+      register: resetsssd_result
 
-    - command: echo -e "cwh.local\ncwh.local"
-      register: echo3
-      changed_when: False
+    - name: Restart sssd
+      command: systemctl restart sssd.service
+      when: (unsetsssd_result is changed) or (resetsssd_result is changed)
 
-    - debug:
-        var: echo3
+    - name: Create share directory
+      file:
+        path: /samba/share/
+        owner: root
+        group: sambashare
+        mode: '2775'
+        state: directory
 
-    - command: echo -e "found in echo1"
-      # when: '"cwh.local" in echo1.stdout'
-      when: '"cwh.local" in echo1.stdout_lines'
+    - name: Create smb.conf
+      template:
+        src: smb.conf
+        dest: /etc/samba/smb.conf
+        backup: yes
+      register: smbconf_result
 
-    - command: echo -e "found in echo2"
-      # when: '"cwh.local" in echo2.stdout'
-      when: '"cwh.local" in echo2.stdout_lines'
-
-    - command: echo -e "found in echo3"
-      # when: '"cwh.local" in echo3.stdout'
-      when: '"cwh.local" in echo3.stdout_lines'
+    - name: Restart smbd
+      command: systemctl restart smbd.service nmbd.service
+      when: smbconf_result is changed
