@@ -1,0 +1,125 @@
+---
+- name: Include private variables
+  include_vars: private.yml
+
+- name: Execute block as sudo
+  become: yes
+  block:
+    - name: Install packages
+      apt:
+        name="{{ sambasvr_packages }}"
+        state=latest
+
+    - name: Unset kerberos default realm
+      lineinfile:
+        path: /etc/krb5.conf
+        regexp: '^(\s*)(default_realm = ATHENA.MIT.EDU)$'
+        line: '\1# \2'
+        backrefs: yes
+
+    - name: Set kerberos default realm
+      blockinfile:
+        path: /etc/krb5.conf
+        insertafter: '^\s*# default_realm = ATHENA.MIT.EDU$'
+        block: |
+          #
+                  default_realm = {{ krb5_default_realm }}
+                  dns_lookup_kdc = true
+                  dns_lookup_realm = true
+          #
+
+    - name: Set NTP server
+      blockinfile:
+        path: /etc/systemd/timesyncd.conf
+        insertafter: '^#NTP=$'
+        block: |
+          #
+          "NTP={{ timesyncd_ntpsvr }}"
+          #
+      register: ntpsvr_result
+      ignore_errors: True
+
+    - name: Enable NTP
+      command: "{{ item }}"
+      when: ntpsvr_result is changed
+      with_items:
+        - timedatectl set-ntp true
+        - systemctl restart systemd-timesyncd.service
+        - timedatectl --adjust-system-clock
+
+    - name: Create realmd.conf
+      template:
+        src: realmd.conf
+        dest: /etc/realmd.conf
+
+    - name: Check PAM configuration
+      command: awk '/mkhomedir/ { print $3 }' /etc/pam.d/common-session
+      register: chkpam_result
+      changed_when: False
+
+    - name: Update PAM configuration
+      command: pam-auth-update --enable mkhomedir
+      when: chkpam_result.stdout != "pam_mkhomedir.so"
+
+    - name: Check for domain
+      command: realm list --name-only
+      register: chkdomain_result
+      changed_when: False
+
+    - name: Join the domain
+      vars:
+        passwd_response:
+          - key: "(?i)password for {{ realm_user }}:"
+            value: "{{ realm_passwd }}"
+      expect:
+        command: realm join --user={{ realm_user }} --computer-ou={{ realm_ou }} {{ realm_domain }} --install=/
+        responses: "{{ passwd_response | items2dict }}"
+      when: chkdomain_result.stdout != realm_domain
+
+    - name: Unset sssd configuration settings
+      lineinfile:
+        path: /etc/sssd/sssd.conf
+        regexp: "{{ item }}"
+        line: '# \1'
+        backrefs: yes
+      with_items:
+        - '^(ldap_id_mapping = False)$'
+        - '^(use_fully_qualified_names = True)$'
+      register: unsetsssd_result
+
+    - name: Reset sssd configuration settings
+      lineinfile:
+        path: /etc/sssd/sssd.conf
+        insertafter: "{{ item.insertafter }}"
+        line: "{{ item.line }}"
+      with_items:
+        - insertafter: '^# ldap_id_mapping = False$'
+          line: ldap_id_mapping = True
+        - insertafter: '^# use_fully_qualified_names = True$'
+          line: use_fully_qualified_names = False
+        - insertafter: '^access_provider = ad$'
+          line: ldap_user_ssh_public_key = altSecurityIdentities
+      register: resetsssd_result
+
+    - name: Restart sssd
+      command: systemctl restart sssd.service
+      when: (unsetsssd_result is changed) or (resetsssd_result is changed)
+
+    - name: Create share directory
+      file:
+        path: /samba/share/
+        owner: root
+        group: sambashare
+        mode: '2775'
+        state: directory
+
+    - name: Create smb.conf
+      template:
+        src: smb.conf
+        dest: /etc/samba/smb.conf
+        backup: yes
+      register: smbconf_result
+
+    - name: Restart smbd
+      command: systemctl restart smbd.service nmbd.service
+      when: smbconf_result is changed
