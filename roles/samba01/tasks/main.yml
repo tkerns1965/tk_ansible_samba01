@@ -88,10 +88,10 @@
         var: echo3
 
     - command: echo -e "found in echo1"
-      when: "cwh.local" in echo1
+      when: '"cwh.local" in echo1.stdout'
 
     - command: echo -e "found in echo2"
-      when: "cwh.local" in echo2
+      when: '"cwh.local" in echo2.stdout'
 
     - command: echo -e "found in echo3"
-      when: "cwh.local" in echo3
+      when: '"cwh.local" in echo3.stdout'
