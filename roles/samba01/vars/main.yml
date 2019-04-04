@@ -1,0 +1,13 @@
+---
+sambasvr_packages:
+  - adcli
+  - krb5-user
+  - libnss-sss
+  - libpam-sss
+  - python-pexpect
+  # - python3-pexpect
+  - realmd
+  # - samba-common-bin
+  - samba
+  - sssd
+  - sssd-tools
