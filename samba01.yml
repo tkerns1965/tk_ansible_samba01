@@ -1,0 +1,5 @@
+---
+- name: Run samba01 role on samba hosts
+  hosts: samba
+  roles:
+    - samba01
