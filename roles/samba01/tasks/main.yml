@@ -61,10 +61,37 @@
       command: pam-auth-update --enable mkhomedir
       when: chkpam_result.stdout != "pam_mkhomedir.so"
 
-    - name: Check for domain
-      command: realm list --name-only
-      register: chkdomain_result
+    # - name: Check for domain
+    #   command: realm list --name-only
+    #   register: chkdomain_result
+    #   changed_when: False
+
+    - command: echo -e ""
+      register: echo1
       changed_when: False
 
     - debug:
-        var: chkdomain_result
+        var: echo1
+
+    - command: echo -e "cwh.local"
+      register: echo2
+      changed_when: False
+
+    - debug:
+        var: echo2
+
+    - command: echo -e "cwh.local\ncwh.local"
+      register: echo3
+      changed_when: False
+
+    - debug:
+        var: echo3
+
+    - command: echo -e "found in echo1"
+      when: "cwh.local" in echo1
+
+    - command: echo -e "found in echo2"
+      when: "cwh.local" in echo2
+
+    - command: echo -e "found in echo3"
+      when: "cwh.local" in echo3
