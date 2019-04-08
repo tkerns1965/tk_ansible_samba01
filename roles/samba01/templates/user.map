@@ -1,1 +1,1 @@
-!root = DOMAIN\administrator
+!root = {{ samba_admin }}
