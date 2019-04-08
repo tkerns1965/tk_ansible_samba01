@@ -50,7 +50,7 @@
     - name: Create realmd.conf
       template:
         src: realmd.conf
-        dest: /etc/realmd.conf
+        dest: /etc/
 
     - name: Check PAM configuration
       command: awk '/mkhomedir/ { print $3 }' /etc/pam.d/common-session
@@ -105,6 +105,11 @@
       command: systemctl restart sssd.service
       when: (unsetsssd_result is changed) or (resetsssd_result is changed)
 
+    - name: Create user.map
+      template:
+        src: user.map
+        dest: /usr/local/samba/etc/
+
     - name: Create share directory
       file:
         path: /samba/share/
@@ -116,7 +121,7 @@
     - name: Create smb.conf
       template:
         src: smb.conf
-        dest: /etc/samba/smb.conf
+        dest: /etc/samba/
         backup: yes
       register: smbconf_result
 
