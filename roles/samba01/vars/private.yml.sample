@@ -12,3 +12,5 @@ realm_passwd: Password!
 
 smbconf_realm: EXAMPLE.COM
 smbconf_wrkgrp: EXAMPLE
+
+usermap_root: EXAMPLE/Administrator
