@@ -1,1 +1,1 @@
-!root = {{ samba_admin }}
+!root = {{ usermap_root }}
