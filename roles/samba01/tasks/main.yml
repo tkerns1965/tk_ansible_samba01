@@ -5,6 +5,17 @@
 - name: Execute block as sudo
   become: yes
   block:
+    - name: Allow change of hostname
+      lineinfile:
+        path: /etc/cloud/cloud.cfg
+        regexp: '^(?P<a>preserve_hostname: )false$'
+        line: '\g<a>true'
+        backrefs: yes
+
+    - name: "Set hostname to {{ samba_hostname }}.{{ samba_domain }}"
+      hostname:
+        name: "{{ samba_hostname }}.{{ samba_domain }}"
+
     - name: Install packages
       apt:
         name="{{ sambasvr_packages }}"
