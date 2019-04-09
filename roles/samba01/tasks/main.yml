@@ -10,23 +10,23 @@
         name="{{ sambasvr_packages }}"
         state=latest
 
-    - name: Unset kerberos default realm
-      lineinfile:
-        path: /etc/krb5.conf
-        regexp: '^(\s*)(default_realm = ATHENA.MIT.EDU)$'
-        line: '\1# \2'
-        backrefs: yes
+    # - name: Unset kerberos default realm
+    #   lineinfile:
+    #     path: /etc/krb5.conf
+    #     regexp: '^(\s*)(default_realm = ATHENA.MIT.EDU)$'
+    #     line: '\1# \2'
+    #     backrefs: yes
 
-    - name: Set kerberos default realm
-      blockinfile:
-        path: /etc/krb5.conf
-        insertafter: '^\s*# default_realm = ATHENA.MIT.EDU$'
-        block: |
-          #
-                  default_realm = {{ krb5_default_realm }}
-                  dns_lookup_kdc = true
-                  dns_lookup_realm = true
-          #
+    # - name: Set kerberos default realm
+    #   blockinfile:
+    #     path: /etc/krb5.conf
+    #     insertafter: '^\s*# default_realm = ATHENA.MIT.EDU$'
+    #     block: |
+    #       #
+    #               default_realm = {{ krb5_default_realm }}
+    #               dns_lookup_kdc = true
+    #               dns_lookup_realm = true
+    #       #
 
     - name: Set NTP server
       blockinfile:
