@@ -21,13 +21,6 @@
         name="{{ sambasvr_packages }}"
         state=latest
 
-    # - name: Unset kerberos default realm
-    #   lineinfile:
-    #     path: /etc/krb5.conf
-    #     regexp: '^(\s*)(default_realm = ATHENA.MIT.EDU)$'
-    #     line: '\1# \2'
-    #     backrefs: yes
-
     - name: Set kerberos default realm
       blockinfile:
         path: /etc/krb5.conf
