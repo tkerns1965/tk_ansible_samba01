@@ -21,7 +21,7 @@
         name="{{ sambasvr_packages }}"
         state=latest
 
-    - name: Set kerberos default realm
+    - name: Set kerberos options
       blockinfile:
         path: /etc/krb5.conf
         insertafter: '^\s*default_realm = {{ krb5_default_realm }}$'
