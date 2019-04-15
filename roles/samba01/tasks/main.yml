@@ -118,7 +118,7 @@
         path: /samba/share/
         owner: root
         group: sambashare
-        mode: '2775'
+        mode: '2770'
         state: directory
 
     - name: Create smb.conf
