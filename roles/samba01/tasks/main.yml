@@ -125,6 +125,7 @@
 
     - name: Set ACLs for share directories
       debug: msg="path = {{ item.path }}"
+      with_items: share_acls
     #   acl:
     #     path: "{{ item.path }}"
     #     entity: "{{ item.entity }}"
@@ -132,8 +133,6 @@
     #     permissions: "{{ item.permissions }}"
     #     default: "{{ item.default }}"
     #     state: present
-      with_items:
-        - share_acls
 
     - name: Create smb.conf
       template:
