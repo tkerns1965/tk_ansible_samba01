@@ -15,6 +15,36 @@ realm_passwd: Password!
 
 usermap_root: EXAMPLE\Administrator
 
+share_names:
+  - /samba/share1
+  - /samba/share2
+
+share_acls:
+  - share1_1:
+      path: /samba/share1
+      entity: 'domain users'
+      etype: group
+      permissions: rwx
+      default: no
+  - share1_2:
+      path: /samba/share1
+      entity: 'domain users'
+      etype: group
+      permissions: rwx
+      default: yes
+  - share2_1:
+      path: /samba/share2
+      entity: 'domain admins'
+      etype: group
+      permissions: rwx
+      default: no
+  - share2_2:
+      path: /samba/share2
+      entity: 'domain admins'
+      etype: group
+      permissions: rwx
+      default: yes
+
 smbconf_pwdsvr: pwdsvr.example.com
 smbconf_realm: EXAMPLE.COM
 smbconf_wrkgrp: EXAMPLE
