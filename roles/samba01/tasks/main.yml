@@ -113,30 +113,26 @@
         src: user.map
         dest: /usr/local/samba/etc/
 
-    - name: Create share directory
+    - name: Create share directories
       file:
-        path: /samba/share/
+        path: "{{ item }}"
         owner: root
         group: sambashare
         mode: '2770'
         state: directory
+      with_items:
+        - share_names
 
-    - name: Set default acl for share directory
+    - name: Set ACLs for share directories
       acl:
-        path: /samba/share/
-        entity: 'domain users'
-        etype: group
-        permissions: rwx
-        default: yes
+        path: "{{ item.path }}"
+        entity: "{{ item.entity }}"
+        etype: "{{ item.etype }}"
+        permissions: "{{ item.permissions }}"
+        default: "{{ item.default }}"
         state: present
-
-    - name: Set acl for share directory
-      acl:
-        path: /samba/share/
-        entity: 'domain users'
-        etype: group
-        permissions: rwx
-        state: present
+      with_items:
+        - share_acls
 
     - name: Create smb.conf
       template:
