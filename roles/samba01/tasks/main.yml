@@ -120,13 +120,13 @@
         group: sambashare
         mode: '2770'
         state: directory
-      with_items:
-        - share_names
+      with_items: "{{ share_names }}"
 
     - name: Set ACLs for share directories
       debug:
         # msg: "{{ item }}"
-        var: "{{ share_acls.0 }}"
+        var: "{{ item }}"
+      with_items: "{{ share_acls }}"
     #   acl:
     #     path: "{{ item.path }}"
     #     entity: "{{ item.entity }}"
