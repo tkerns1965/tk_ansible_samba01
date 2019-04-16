@@ -113,16 +113,24 @@
         src: user.map
         dest: /usr/local/samba/etc/
 
-    - name: Create share directories
+    - name: Create samba folder
+      file:
+        path: /samba/
+        # owner: root
+        # group: root
+        mode: '0755'
+        state: directory
+
+    - name: Create shared folders
       file:
         path: "{{ item }}"
-        owner: root
+        # owner: root
         group: sambashare
         mode: '2770'
         state: directory
       with_items: "{{ share_names }}"
 
-    - name: Set ACLs for share directories
+    - name: Set ACLs for shared folders
       acl:
         path: "{{ item.path }}"
         entity: "{{ item.entity }}"
