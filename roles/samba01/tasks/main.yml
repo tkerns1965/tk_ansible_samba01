@@ -127,7 +127,8 @@
       debug:
         msg: "{{ item }}"
         # var: share_acls
-      with_items: share_acls
+      with_items:
+        - share_acls
     #   acl:
     #     path: "{{ item.path }}"
     #     entity: "{{ item.entity }}"
