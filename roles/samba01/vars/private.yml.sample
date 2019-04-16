@@ -44,3 +44,8 @@ share_acls:
 smbconf_pwdsvr: pwdsvr.example.com
 smbconf_realm: EXAMPLE.COM
 smbconf_wrkgrp: EXAMPLE
+smbconf_shares:
+  - name: share1
+    path: /samba/share1/
+  - name: share2
+    path: /samba/share2/
