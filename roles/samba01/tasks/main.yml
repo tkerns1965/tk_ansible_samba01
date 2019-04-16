@@ -124,7 +124,7 @@
         - share_names
 
     - name: Set ACLs for share directories
-      debug: msg="path = {{ item.path }}"
+      debug: var="{{ item }}"
       with_items: share_acls
     #   acl:
     #     path: "{{ item.path }}"
