@@ -116,19 +116,23 @@
     - name: Create samba folder
       file:
         path: /samba/
-        # owner: root
-        # group: root
         mode: '0755'
         state: directory
 
     - name: Create shared folders
       file:
         path: "{{ item }}"
-        # owner: root
         group: sambashare
         mode: '2770'
         state: directory
       with_items: "{{ share_names }}"
+
+    - name: Create users folder
+      file:
+        path: /samba/users/
+        group: sambashare
+        mode: '2750'
+        state: directory
 
     - name: Set ACLs for shared folders
       acl:
