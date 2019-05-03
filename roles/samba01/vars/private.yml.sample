@@ -41,6 +41,16 @@ share_acls:
     permissions: rwx
     default: yes
 
+users_acls:
+  - entity: 'domain users'
+    etype: group
+    permissions: rwx
+    default: no
+  - entity: 'domain users'
+    etype: group
+    permissions: rwx
+    default: yes
+
 smbconf_pwdsvr: pwdsvr.example.com
 smbconf_realm: EXAMPLE.COM
 smbconf_wrkgrp: EXAMPLE
