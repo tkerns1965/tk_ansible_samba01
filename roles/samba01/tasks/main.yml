@@ -144,6 +144,16 @@
         state: present
       with_items: "{{ share_acls }}"
 
+    - name: Set ACLs for users folder
+      acl:
+        path: /samba/users/
+        entity: "{{ item.entity }}"
+        etype: "{{ item.etype }}"
+        permissions: "{{ item.permissions }}"
+        default: "{{ item.default }}"
+        state: present
+      with_items: "{{ users_acls }}"
+
     - name: Create smb.conf
       template:
         src: smb.conf
